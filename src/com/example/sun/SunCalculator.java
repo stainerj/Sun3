@@ -3,6 +3,8 @@ package com.example.sun;
 import java.text.DecimalFormat;
 import java.util.Scanner;
 
+//**ignore SunCalculatorFunctions
+
 public class SunCalculator {
 
     public static Scanner keyboard = new Scanner(System.in);//input stream
@@ -34,6 +36,9 @@ public class SunCalculator {
     public static double hourAngle = 0;
     public static double timeZone = 0;
     public static double equationOfCentre = 0;
+
+    public static double elapsedDays = 0;
+    public static double meanAnomDegInit = 0;//the mean anomaly in degrees, initial value
 
     public static final double J2K = 2451545;//J2000
     public static final double ELOP = 102.9373;//ecliptic longitude of perihelion
@@ -80,11 +85,29 @@ public class SunCalculator {
             solarTransitTime();
             riseAndSet();
             riseAndSetTime();
+
+            System.out.println("--------------------------------------------------------------------------------");
+            System.out.println("JD including TZ offset = " + julianDay);
+            //moon
+            //create moon instance and do moon stuff here
+            //e.g. calculateEccentricAnomaly();
+
+            elapsed();
+            System.out.println("elapsedDays = "+ elapsedDays);
+            MoonCalculator moonCalc = new MoonCalculator();
+            System.out.println("meanEclipticLongMoon = " + moonCalc.meanEclipticLong(elapsedDays));
+            System.out.println("meanEclipticLongMoonAscending = " + moonCalc.meanEclipticLongAscendingNode(elapsedDays));
+            System.out.println("meanAnomalyMoon = " + moonCalc.meanAnomaly(elapsedDays));
+            System.out.println(meanAnomDegInit);
+            System.out.println("annual equation correction = " + moonCalc.annualEquation(meanAnomDegInit));
+            System.out.println("evection correction = " +moonCalc.evection(eclipticLongSun));
+            System.out.println("mean anomaly correction = " +moonCalc.meanAnomCorrection(meanAnomDegInit));
+
             another();
         } while (select == 'y' || select == 'Y');
     }
 
-    //get calender date from user
+    //get calendar date from user
     public static void getDate() {
         System.out.println("Enter year: ");
         year = keyboard.nextDouble();
@@ -121,7 +144,7 @@ public class SunCalculator {
         select = keyboard.next().charAt(0);
     }
 
-    //convert (gregorian) calender date to julian day number - exact method including time of day
+    //convert (gregorian) calendar date to julian day number - exact method including time of day
     //exact whole number date gives 12.00 hours (noon), date given as e.g. 0.5 corresponds to 00.00 hours (midnight, UTC)
     public static void dateTimeToJulianDay() {
         double hour = Math.floor(timeDay);
@@ -155,6 +178,13 @@ public class SunCalculator {
 
         //compensate for time zone offset
         julianDay = julianDay - (timeZone/24);
+        //temp statement
+        System.out.println("JD including TZ offset = " + df4.format(julianDay));
+    }
+
+    //calculate elapsed days
+    public static void elapsed() {
+        elapsedDays = julianDay - J2K;
     }
 
     //calculate the mean anomaly in degrees
@@ -163,6 +193,7 @@ public class SunCalculator {
         meanAnomDeg = theta%360;
 
         System.out.println("MEAN ANOMALY, EARTH (DEGREES) ------------------------- " + df4.format(meanAnomDeg));
+        meanAnomDegInit = meanAnomDeg;
     }
 
     //calculate the mean anomaly in degrees
@@ -389,6 +420,18 @@ public class SunCalculator {
     {
         return radians / 0.0174532925199;
     }
+
+    //moon
+
+    //calculate eccentric anomaly
+    /*public static void calculateEccentricAnomaly() {
+        //convert to radians
+        double meanAnomRad = degreesToRadians(meanAnomDeg);
+        eccentricAnomaly = meanAnomRad + (eccentricityMoon * Math.sin(meanAnomRad)) *
+                (1 + (eccentricityMoon * Math.cos(meanAnomRad)));
+        System.out.println("");
+        System.out.println("ECCENTRIC ANOMALY -------------------- " + eccentricAnomaly);
+    }*/
 }
 
 
